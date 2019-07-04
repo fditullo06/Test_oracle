@@ -1,0 +1,90 @@
+alter table TB_PLAN drop constraint fk_plan_phase;
+alter table TB_INSTALLMENT drop constraint fk_install_phase;
+
+drop table TB_PHASE purge;
+
+create table TB_PHASE
+(
+  PHASE_ID number NOT NULL,
+  PHASE_CODE varchar2(50) NOT NULL,
+  PHASE_DURATION number NOT NULL,
+  CHARGES NUMBER(12,2),
+  constraint PHASE_PK primary key (PHASE_ID)
+);
+
+create index PHASE_CODE_IDX on TB_PHASE(PHASE_CODE);
+
+drop table TB_INSTALLMENT; 
+  
+create table TB_INSTALLMENT
+(
+ INSTALL_ID number NOT NULL,
+ PHASE_ID number NOT NULL,
+ INSTALL_PCT number (3,2),
+ CONSTRAINT fk_install_phase
+    FOREIGN KEY (PHASE_ID)
+    REFERENCES TB_PHASE (PHASE_ID),
+ CONSTRAINT INTALL_PK PRIMARY KEY (INSTALL_ID,PHASE_ID)
+);
+
+drop table TB_PLAN;
+
+create table TB_PLAN
+(
+  PLAN_ID   number NOT NULL,
+  PHASE_ID  number NOT NULL,
+  PARENT_PHASE_ID number,
+  START_DATE date,
+  END_DATE date,
+  CONSTRAINT fk_plan_phase
+    FOREIGN KEY (PHASE_ID)
+    REFERENCES TB_PHASE (PHASE_ID),
+  CONSTRAINT PLAN_PK PRIMARY KEY (PLAN_ID,PHASE_ID)
+);
+
+drop table TB_HOUSE;
+
+create table TB_HOUSE
+(
+  HOUSE_ID number NOT NULL,
+  PLAN_ID  number,
+  CONSTRAINT HOUSE_PK PRIMARY KEY (HOUSE_ID,PLAN_ID)
+);
+
+drop sequence house_seq;
+
+CREATE SEQUENCE house_seq
+  MINVALUE 1
+  MAXVALUE 999999999999999999999999999
+  START WITH 1
+  INCREMENT BY 1; 
+
+drop sequence plan_seq;
+
+CREATE SEQUENCE plan_seq
+  MINVALUE 1
+  MAXVALUE 999999999999999999999999999
+  START WITH 1
+  INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER TRG_HOUSE_SEQ
+BEFORE INSERT ON TB_HOUSE
+FOR EACH ROW
+BEGIN
+	IF :new.HOUSE_ID IS NULL THEN
+		SELECT house_seq.nextval INTO :new.HOUSE_ID FROM DUAL;
+	END IF;
+END;
+/
+
+
+CREATE OR REPLACE TRIGGER TRG_PLAN_SEQ
+BEFORE INSERT ON TB_PLAN
+FOR EACH ROW
+BEGIN
+	IF :new.PLAN_ID IS NULL THEN
+		SELECT PLAN_SEQ.nextval INTO :new.PLAN_ID FROM DUAL;
+	END IF;
+END;
+/
+
