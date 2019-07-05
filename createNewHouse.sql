@@ -1,4 +1,4 @@
-create or replace procedure CreateNewHouse(pn_house_id number) 
+create or replace procedure CreateNewHouse 
 is
 
 type row_plan is record
@@ -18,7 +18,14 @@ tb_p tab_plan;
 new_date_start date;
 new_id_plan number;
 
+ln_max_house_id number;
+
 begin
+    
+    select max(house_id) 
+    into ln_max_house_id  
+    from tb_house;
+    
     
     select plan_seq.nextval 
     into new_id_plan
@@ -28,7 +35,7 @@ begin
     into  new_date_start
     from tb_plan pl 
     inner join tb_house ho on pl.plan_id = ho.plan_id
-    where ho.house_id = pn_house_id;
+    where ho.house_id = ln_max_house_id;
 
     select 
     pl.plan_id, 
@@ -41,7 +48,7 @@ begin
     from tb_plan pl 
     inner join tb_house ho on pl.plan_id = ho.plan_id
     inner join tb_phase ph on pl.phase_id = ph.phase_id
-    where ho.house_id = pn_house_id;
+    where ho.house_id = ln_max_house_id ;
 
     FOR i IN 1 .. tb_p.COUNT
     LOOP
@@ -76,5 +83,10 @@ begin
         house_seq.nextval,
         new_id_plan
        );
+       
+exception
+  
+   when others then
+     raise;
 
 end;
