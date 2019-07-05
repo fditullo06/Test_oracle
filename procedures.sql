@@ -17,7 +17,7 @@ CREATE TYPE t_plan_tab IS TABLE OF t_plan_row;
 /
 
 
-CREATE OR REPLACE FUNCTION fnc_Get_list_plan(p_house_id number, p_plan_id number)
+CREATE OR REPLACE FUNCTION fnc_Get_list_plan(p_house_id number)
   RETURN t_plan_tab
   PIPELINED
 AS
@@ -33,20 +33,20 @@ BEGIN
                       tb_phase tbph inner join tb_plan tbp 
                       on tbph.phase_id = tbp.phase_id and
                       tbp.parent_phase_id is null
-                      and tbp.plan_id = p_plan_id) total_duration,
+                      and tbp.plan_id = (select plan_id from tb_house where house_id = p_house_id)) total_duration,
                       (select min(start_date) 
                       from TB_PLAN pl inner join TB_HOUSE h
                       on pl.PLAN_ID = h.PLAN_ID
-                      where  pl.plan_id = p_plan_id) start_date,
+                      where  pl.plan_id = (select plan_id from tb_house where house_id = p_house_id)) start_date,
                      (select max(end_date) 
                       from TB_PLAN pl inner join TB_HOUSE h
                       on pl.PLAN_ID = h.PLAN_ID
-                      and pl.plan_id = p_plan_id) end_date,
+                      and pl.plan_id = (select plan_id from tb_house where house_id = p_house_id)) end_date,
                      (select sum(charges)  from 
                       tb_phase tbph inner join tb_plan tbp 
                       on tbph.phase_id = tbp.phase_id and
                       tbp.parent_phase_id is null
-                      and tbp.plan_id = p_plan_id) total_charges, 
+                      and tbp.plan_id = (select plan_id from tb_house where house_id = p_house_id)) total_charges, 
                       null install
                       from 
                       tb_house
@@ -64,7 +64,7 @@ BEGIN
                     decode(install_pct, null, null, to_char(tbi.install_pct*100)||'%') intall_pct
                     FROM tb_plan tplan inner join tb_phase tphase on tplan.phase_id = tphase.phase_id
                     left outer join tb_installment tbi on tphase.phase_id = tbi.phase_id
-                    where tplan.plan_id = p_plan_id
+                    where tplan.plan_id = (select plan_id from tb_house where house_id = p_house_id)
                     START WITH parent_phase_id is null
                     CONNECT BY PRIOR tplan.phase_id = tplan.parent_phase_id
                     order by phase_id
