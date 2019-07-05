@@ -89,10 +89,10 @@ order by 1;
 
 
 SELECT *
-FROM TABLE(fnc_Get_list_plan(1));
+FROM TABLE(fnc_Get_list_plan(1,1));
 
 begin
-   CreateNewHouse(2);
+   CreateNewHouse;
 end;
 
 
