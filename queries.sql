@@ -87,9 +87,28 @@ on tabplan.plan_id = tbh.plan_id
 where tbh.house_id = :p_house_id
 order by 1;
 
+--***************************************************************************************************
+
+SELECT distinct LPAD(' ',4*(LEVEL-1)) ||tphase.phase_code phase_code,
+tphase.phase_duration,
+tplan.plan_id,
+tphase.phase_id,
+tplan.start_date,
+tplan.end_date,
+tphase.charges
+FROM tb_plan tplan inner join tb_phase tphase on tplan.phase_id = tphase.phase_id
+where tplan.plan_id = (select plan_id from tb_house where house_id = :p_house_id)
+START WITH parent_phase_id is null
+CONNECT BY PRIOR tplan.phase_id = tplan.parent_phase_id
+order by phase_id;
+
+
+
+--*************************************************************************************************
+
 
 SELECT *
-FROM TABLE(fnc_Get_list_plan(1,1));
+FROM TABLE(fnc_Get_list_plan(1));
 
 begin
    CreateNewHouse;
