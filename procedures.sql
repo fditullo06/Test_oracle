@@ -64,7 +64,12 @@ BEGIN
                       tplan.end_date,
                       tphase.charges*nvl(install_pct,1) charges,
                       decode(install_pct, null, null, to_char(tbi.install_pct*100)||'%') intall_pct,
-                      ROW_NUMBER() OVER (PARTITION BY tplan.plan_id,tphase.phase_id,install_id,tbi.install_pct ORDER BY tplan.plan_id,tphase.phase_id,install_id,tbi.install_pct) AS row_id
+                      case
+                      when tplan.parent_phase_id is null then
+                          (select plan_id from tb_house where house_id = p_house_id)
+                      else
+                          ROW_NUMBER() OVER (PARTITION BY tplan.plan_id,tphase.phase_id,install_id,tbi.install_pct ORDER BY tplan.plan_id,tphase.phase_id,install_id,tbi.install_pct)
+                      end row_id
                       FROM tb_plan tplan inner join tb_phase tphase on tplan.phase_id = tphase.phase_id
                       left outer join tb_installment tbi on tphase.phase_id = tbi.phase_id
                       where tplan.plan_id = (select plan_id from tb_house where house_id = p_house_id)
