@@ -24,7 +24,7 @@ begin
 end;
 
 begin
-   pkg_house_mgmt.prc_Modify_phase_duration(5,-10);
+   pkg_house_mgmt.prc_Modify_phase_duration(5,5);
 end;
 
 -- to modify the installments of the phase (three installments maximum)
